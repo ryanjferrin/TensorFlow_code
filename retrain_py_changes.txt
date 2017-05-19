@@ -1,0 +1,96 @@
+
+
+#================================================================================
+#--------------------------------------------------------------------------------
+#     Step 1: if the print_misclassified_test_image flag is used the folowing #calculations will be made
+#--------------------------------------------------------------------------------
+
+  if FLAGS.print_misclassified_test_images:
+
+#--------------------------------------------------------------------------------
+#     Step 2: Initialize variables 
+#--------------------------------------------------------------------------------
+
+    count = 0
+    tp = 0
+    fp = 0
+    fn = 0
+    tn = 0
+    mis = []
+
+#--------------------------------------------------------------------------------
+
+#     Step 3: Perform analysis to determine if a prediction was tp,fp,fn,tn
+#--------------------------------------------------------------------------------
+
+
+    for i, test_filename in enumerate(test_filenames):
+
+
+     if predictions[i] == test_ground_truth[i].argmax() and image_lists.keys()[predictions[i]] == 'melanoma':
+	   tp += 1
+     elif predictions[i] != test_ground_truth[i].argmax() and image_lists.keys()[predictions[i]] == 'melanoma':
+	   fp += 1
+	   mis.append('melanoma   |  benign')
+     elif predictions[i] != test_ground_truth[i].argmax() and image_lists.keys()[predictions[i]] == 'benign':
+	   fn += 1
+	   mis.append('benign     |  melanoma')
+     elif predictions[i] == test_ground_truth[i].argmax() and image_lists.keys()[predictions[i]] == 'benign':
+	   tn += 1
+
+#--------------------------------------------------------------------------------
+
+#     Step 4: Display the hyper-parameters  being used and their values
+#--------------------------------------------------------------------------------
+
+    print('\n========================================')
+    print('\n       Model Evaluation   ')
+    print('========================================\n')
+    print('\n     ===Hyper-parameters===   \n')
+
+    print('  \n how_many_training_steps: ',FLAGS.how_many_training_steps,'\n learning_rate:           ',FLAGS.learning_rate,'\n testing_percentage:      ',FLAGS.testing_percentage,'\n validation_percentage:   ',FLAGS.validation_percentage,'\n eval_step_interval:      ',FLAGS.eval_step_interval,'\n training_batch_size:     ',FLAGS.train_batch_size,'\n test_batch_size:        ',FLAGS.test_batch_size,'\n validation_batch_size:   ',FLAGS.validation_batch_size,'\n flip_left_right:         ',FLAGS.flip_left_right,'\n random_crop:             ',FLAGS.random_crop,'\n random_scale:            ',FLAGS.random_scale,'\n random_brightness:       ',FLAGS.random_brightness)
+
+#--------------------------------------------------------------------------------
+
+#     Step 5: Display the tp,fp,fn,tn rates for the trial
+#--------------------------------------------------------------------------------
+
+
+    print('\n========================================\n')
+    print('     ===Evaluation Metrics===\n')
+    print('\n tp:',tp,'  fn:',fn,'\n fp:',fp,'  tn:',tn, '\n')
+
+#--------------------------------------------------------------------------------
+
+#     Step 6: Calculate  and display precision,recall,f1 score, and accuracy
+#--------------------------------------------------------------------------------
+
+    if tp>0:
+      precision = tp/(tp+fp)*100
+      recall = tp/(tp+fn)*100
+      f1 = 2*(precision*recall/(precision+recall))
+      accuracy = (tp+tn)/(tp+tn+fp+fn)*100
+    
+    print(' precision:  {0:.1f}%'.format(precision),'\n','recall:     {0:.1f}%'.format(recall),'\n','f1:         {0:.1f}%'.format(f1),'\n','accuracy:   {0:.1f}%'.format(accuracy),'\n\n\n\n')
+
+#--------------------------------------------------------------------------------
+
+#     Step 7: Append the performance metrics and hyper-parameters being used to a #CSV file for analysis
+#--------------------------------------------------------------------------------
+
+
+    with open('/home/r/Desktop/evaluation.csv','a') as fp:
+	a = csv.writer(fp,delimiter=',')
+	data = [[f1,precision,recall,accuracy,FLAGS.how_many_training_steps,FLAGS.learning_rate,FLAGS.testing_percentage,FLAGS.validation_percentage,FLAGS.eval_step_interval,FLAGS.train_batch_size,FLAGS.test_batch_size,FLAGS.validation_batch_size,FLAGS.flip_left_right,FLAGS.random_crop,FLAGS.random_scale,FLAGS.random_brightness]]
+	a.writerows(data)
+
+
+    '''print('\n========================================\n')
+    print(' === MISCLASSIFIED TEST IMAGES ===\n')
+    print('  Prediction |  Truth\n')
+    for i in mis:
+     print(' ',i)'''
+
+
+#=============================================================================
+
